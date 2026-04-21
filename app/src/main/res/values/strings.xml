@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Skill Issue</string>
+    <string name="start">START</string>
+    <!-- Keyboard letters -->
+    <string name="key_q">Q</string><string name="key_w">W</string><string name="key_e">E</string><string name="key_r">R</string>
+    <string name="key_t">T</string><string name="key_y">Y</string><string name="key_u">U</string><string name="key_i">I</string>
+    <string name="key_o">O</string><string name="key_p">P</string><string name="key_a">A</string><string name="key_s">S</string>
+    <string name="key_d">D</string><string name="key_f">F</string><string name="key_g">G</string><string name="key_h">H</string>
 </resources>

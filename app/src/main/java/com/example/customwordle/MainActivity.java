@@ -1,7 +1,9 @@
 package com.example.customwordle;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
@@ -43,8 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (categories != null) {
             ArrayList<String> catList = new ArrayList<>(categories.keySet());
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, catList);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.spinner_item_selected, catList);
+            adapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
             categorySpinner.setAdapter(adapter);
         }
 
@@ -76,12 +78,15 @@ public class MainActivity extends AppCompatActivity {
         resetTiles();
         resetKeyboard();
         startButton.setEnabled(false);
-        // Toast.makeText(this, "Target: " + targetWord, Toast.LENGTH_LONG).show();  // Remove later
     }
 
     private void createTiles() {
-        int tileSize = (int) (Math.min(getResources().getDisplayMetrics().widthPixels,
-                getResources().getDisplayMetrics().heightPixels * 0.6) / 5.2);
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        int horizontalPadding = dpToPx(24);
+        int totalTileSpacing = dpToPx(24);
+        int tileSize = (screenWidth - horizontalPadding - totalTileSpacing) / 5;
+        tileSize = Math.min(tileSize, dpToPx(62));
+
         for (int row = 0; row < 6; row++) {
             for (int col = 0; col < 5; col++) {
                 tiles[row][col] = new TextView(this);
@@ -90,19 +95,19 @@ public class MainActivity extends AppCompatActivity {
                 params.columnSpec = GridLayout.spec(col);
                 params.width = tileSize;
                 params.height = tileSize;
-                params.setMargins(6, 6, 6, 6);
+                params.setMargins(dpToPx(3), dpToPx(3), dpToPx(3), dpToPx(3));
                 tiles[row][col].setLayoutParams(params);
                 tiles[row][col].setGravity(Gravity.CENTER);
-                tiles[row][col].setTextSize(32);
-                tiles[row][col].setBackgroundColor(Color.parseColor("#ffffff"));
-                tiles[row][col].setTextColor(Color.parseColor("#000000"));
+                tiles[row][col].setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
+                tiles[row][col].setTypeface(Typeface.DEFAULT_BOLD);
+                tiles[row][col].setBackgroundResource(R.drawable.tile_background);
+                tiles[row][col].setTextColor(getResources().getColor(R.color.white, null));
                 grid.addView(tiles[row][col]);
             }
         }
     }
 
     private void setupKeyboard() {
-        // Letter keys
         String[] letters = {"Q","W","E","R","T","Y","U","I","O","P","A","S","D","F","G","H","J","K","L","Z","X","C","V","B","N","M"};
         int[] keyIds = {R.id.keyQ, R.id.keyW, R.id.keyE, R.id.keyR, R.id.keyT, R.id.keyY, R.id.keyU, R.id.keyI, R.id.keyO, R.id.keyP,
                 R.id.keyA, R.id.keyS, R.id.keyD, R.id.keyF, R.id.keyG, R.id.keyH, R.id.keyJ, R.id.keyK, R.id.keyL,
@@ -110,18 +115,40 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < letters.length; i++) {
             int id = keyIds[i];
-            Button btn = findViewById(id);
+            TextView btn = findViewById(id);
             char letter = letters[i].charAt(0);
+            btn.setText(String.valueOf(letter));
+            btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+            btn.setTypeface(Typeface.DEFAULT_BOLD);
+            btn.setGravity(Gravity.CENTER);
+            btn.setBackgroundResource(R.drawable.key_normal);
+            btn.setBackgroundTintList(null);
+            btn.setTextColor(getResources().getColor(R.color.white, null));
             btn.setOnClickListener(v -> handleKey(letter));
-            keyboardState.put(letter, 0);  // 0=normal,1=gray,2=yellow,3=green
+            keyboardState.put(letter, 0);
         }
 
-        // ENTER
-        findViewById(R.id.keyENTER).setOnClickListener(v -> {
+        TextView enterButton = findViewById(R.id.keyENTER);
+        enterButton.setText("ENTER");
+        enterButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        enterButton.setTypeface(Typeface.DEFAULT_BOLD);
+        enterButton.setGravity(Gravity.CENTER);
+        enterButton.setBackgroundResource(R.drawable.key_enter);
+        enterButton.setBackgroundTintList(null);
+        enterButton.setTextColor(getResources().getColor(R.color.white, null));
+        enterButton.setOnClickListener(v -> {
             if (currentCol == 5) submitGuess();
         });
-        // DELETE
-        findViewById(R.id.keyDELETE).setOnClickListener(v -> {
+
+        TextView deleteButton = findViewById(R.id.keyDELETE);
+        deleteButton.setText("DEL");
+        deleteButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        deleteButton.setTypeface(Typeface.DEFAULT_BOLD);
+        deleteButton.setGravity(Gravity.CENTER);
+        deleteButton.setBackgroundResource(R.drawable.key_enter);
+        deleteButton.setBackgroundTintList(null);
+        deleteButton.setTextColor(getResources().getColor(R.color.white, null));
+        deleteButton.setOnClickListener(v -> {
             if (currentCol > 0) {
                 currentCol--;
                 tiles[currentRow][currentCol].setText("");
@@ -170,15 +197,15 @@ public class MainActivity extends AppCompatActivity {
     private int[] checkGuess(String guess, String target) {
         int[] result = new int[5];
         boolean[] used = new boolean[5];
-        // Green first
+
         for (int i = 0; i < 5; i++) {
             if (guess.charAt(i) == target.charAt(i)) {
                 result[i] = 2;
                 used[i] = true;
-                keyboardState.put(guess.charAt(i), 3);  // Green
+                keyboardState.put(guess.charAt(i), 3);
             }
         }
-        // Yellow/Gray
+
         for (int i = 0; i < 5; i++) {
             if (result[i] == 2) continue;
             for (int j = 0; j < 5; j++) {
@@ -191,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-        // Remaining gray
+
         for (int i = 0; i < 5; i++) {
             if (result[i] == 0) {
                 keyboardState.put(Character.toUpperCase(guess.charAt(i)), 1);
@@ -217,19 +244,36 @@ public class MainActivity extends AppCompatActivity {
     private void updateKeyboard(int[] result, String guess) {
         for (int i = 0; i < 5; i++) {
             char letter = Character.toUpperCase(guess.charAt(i));
-            Button btn = findKeyButton(letter);
+            TextView btn = findKeyButton(letter);
             if (btn != null) {
                 int state = keyboardState.get(letter);
                 switch (state) {
-                    case 3: case 2: btn.setBackgroundTintList(getResources().getColorStateList(R.color.tile_green, null)); break;
-                    case 1: btn.setBackgroundTintList(getResources().getColorStateList(R.color.tile_yellow, null)); break;
-                    case 0: btn.setBackgroundTintList(getResources().getColorStateList(R.color.tile_gray, null)); break;
+                    case 3:
+                        btn.setBackgroundTintList(null);
+                        btn.setBackgroundColor(getResources().getColor(R.color.tile_green, null));
+                        btn.setTextColor(getResources().getColor(R.color.white, null));
+                        break;
+                    case 2:
+                        btn.setBackgroundTintList(null);
+                        btn.setBackgroundColor(getResources().getColor(R.color.tile_yellow, null));
+                        btn.setTextColor(getResources().getColor(R.color.white, null));
+                        break;
+                    case 1:
+                        btn.setBackgroundTintList(null);
+                        btn.setBackgroundColor(getResources().getColor(R.color.tile_gray, null));
+                        btn.setTextColor(getResources().getColor(R.color.white, null));
+                        break;
+                    default:
+                        btn.setBackgroundResource(R.drawable.key_normal);
+                        btn.setBackgroundTintList(null);
+                        btn.setTextColor(getResources().getColor(R.color.white, null));
+                        break;
                 }
             }
         }
     }
 
-    private Button findKeyButton(char letter) {
+    private TextView findKeyButton(char letter) {
         int id = getResources().getIdentifier("key" + letter, "id", getPackageName());
         return id != 0 ? findViewById(id) : null;
     }
@@ -238,8 +282,8 @@ public class MainActivity extends AppCompatActivity {
         for (int row = 0; row < 6; row++) {
             for (int col = 0; col < 5; col++) {
                 tiles[row][col].setText("");
-                tiles[row][col].setBackgroundColor(Color.parseColor("#ffffff"));
-                tiles[row][col].setTextColor(Color.BLACK);
+                tiles[row][col].setBackgroundResource(R.drawable.tile_background);
+                tiles[row][col].setTextColor(getResources().getColor(R.color.white, null));
             }
         }
     }
@@ -247,14 +291,40 @@ public class MainActivity extends AppCompatActivity {
     private void resetKeyboard() {
         String[] letters = {"Q","W","E","R","T","Y","U","I","O","P","A","S","D","F","G","H","J","K","L","Z","X","C","V","B","N","M"};
         for (String letter : letters) {
-            Button btn = findKeyButton(letter.charAt(0));
-            if (btn != null) btn.setBackgroundTintList(null);  // Reset to default
+            TextView btn = findKeyButton(letter.charAt(0));
+            if (btn != null) {
+                btn.setBackgroundResource(R.drawable.key_normal);
+                btn.setBackgroundTintList(null);
+                btn.setTextColor(getResources().getColor(R.color.white, null));
+            }
+        }
+
+        TextView enterButton = findViewById(R.id.keyENTER);
+        if (enterButton != null) {
+            enterButton.setBackgroundResource(R.drawable.key_enter);
+            enterButton.setBackgroundTintList(null);
+            enterButton.setTextColor(getResources().getColor(R.color.white, null));
+        }
+
+        TextView deleteButton = findViewById(R.id.keyDELETE);
+        if (deleteButton != null) {
+            deleteButton.setBackgroundResource(R.drawable.key_enter);
+            deleteButton.setBackgroundTintList(null);
+            deleteButton.setTextColor(getResources().getColor(R.color.white, null));
         }
     }
 
     private void shakeRow() {
-        Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);  // Create res/anim/shake.xml later
+        Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
         grid.startAnimation(shake);
         Toast.makeText(this, "Not a valid word", Toast.LENGTH_SHORT).show();
+    }
+
+    private int dpToPx(int dp) {
+        return (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dp,
+                getResources().getDisplayMetrics()
+        );
     }
 }

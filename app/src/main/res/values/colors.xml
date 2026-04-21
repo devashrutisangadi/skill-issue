@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="black">#000000</color>
-    <color name="white">#ffffff</color>
-    <color name="dark_gray">#121212</color>
-    <color name="keyboard_dark">#818384</color>
-    <color name="keyboard_light">#d3d6da</color>
-    <color name="tile_empty">#ffffff</color>
-    <color name="tile_gray">#787c7e</color>
-    <color name="tile_yellow">#c9b458</color>
-    <color name="tile_green">#6aaa64</color>
+    <color name="white">#FFFFFF</color>
+    <color name="dark_bg">#121213</color>
+    <color name="divider_dark">#3A3A3C</color>
+    <color name="keyboard_light">#818384</color>
+    <color name="keyboard_dark">#565758</color>
+    <color name="tile_empty">#121213</color>
+    <color name="tile_border">#3A3A3C</color>
+    <color name="tile_gray">#3A3A3C</color>
+    <color name="tile_yellow">#B59F3B</color>
+    <color name="tile_green">#538D4E</color>
 </resources>
