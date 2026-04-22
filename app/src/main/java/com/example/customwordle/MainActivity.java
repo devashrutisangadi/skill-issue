@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private Spinner categorySpinner;
     private GridLayout grid;
     private HorizontalScrollView boardScroll;
+    private View keyboardContainer;
+    private TextView introText;
     private Button startButton;
 
     private Map<String, List<String>> categories;
@@ -56,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
         categorySpinner = findViewById(R.id.categorySpinner);
         grid = findViewById(R.id.gridLayout);
         boardScroll = findViewById(R.id.boardScroll);
+        keyboardContainer = findViewById(R.id.keyboardContainer);
+        introText = findViewById(R.id.introText);
         startButton = findViewById(R.id.startButton);
 
         categories = WordLoader.loadCategories(this);
@@ -79,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
 
         startButton.setOnClickListener(v -> startGame());
 
-        createTiles();
         setupKeyboard();
+        showIntroState();
     }
 
     private void startGame() {
@@ -112,14 +116,37 @@ public class MainActivity extends AppCompatActivity {
         currentCol = 0;
         keyboardState.clear();
 
+        showGameState();
         createTiles();
         resetKeyboard();
         currentCol = findNextEditableCol(0);
-        if (boardScroll != null) {
-            boardScroll.post(() -> boardScroll.fullScroll(View.FOCUS_LEFT));
-        }
+        centerViewportOnCol(currentCol, false);
 
         startButton.setEnabled(false);
+    }
+
+    private void showIntroState() {
+        if (introText != null) {
+            introText.setVisibility(View.VISIBLE);
+        }
+        if (boardScroll != null) {
+            boardScroll.setVisibility(View.GONE);
+        }
+        if (keyboardContainer != null) {
+            keyboardContainer.setVisibility(View.GONE);
+        }
+    }
+
+    private void showGameState() {
+        if (introText != null) {
+            introText.setVisibility(View.GONE);
+        }
+        if (boardScroll != null) {
+            boardScroll.setVisibility(View.VISIBLE);
+        }
+        if (keyboardContainer != null) {
+            keyboardContainer.setVisibility(View.VISIBLE);
+        }
     }
 
     private void createTiles() {
@@ -230,6 +257,8 @@ public class MainActivity extends AppCompatActivity {
 
         tiles[currentRow][currentCol].setText(String.valueOf(key));
         currentCol = findNextEditableCol(currentCol + 1);
+        int focusCol = Math.min(currentCol, wordLength - 1);
+        centerViewportOnCol(focusCol, true);
     }
 
     private void handleDelete() {
@@ -241,6 +270,7 @@ public class MainActivity extends AppCompatActivity {
         if (prev >= 0) {
             tiles[currentRow][prev].setText("");
             currentCol = prev;
+            centerViewportOnCol(currentCol, true);
         }
     }
 
@@ -279,6 +309,7 @@ public class MainActivity extends AppCompatActivity {
 
         currentRow++;
         currentCol = findNextEditableCol(0);
+        centerViewportOnCol(currentCol, true);
 
         if (currentRow == maxRows) {
             Toast.makeText(this, "Lost! The word was: " + targetWord, Toast.LENGTH_LONG).show();
@@ -486,6 +517,38 @@ public class MainActivity extends AppCompatActivity {
             col--;
         }
         return col;
+    }
+
+    private void centerViewportOnCol(int col, boolean smooth) {
+        if (boardScroll == null || tiles.length == 0 || wordLength == 0) {
+            return;
+        }
+
+        int row = Math.max(0, Math.min(currentRow, maxRows - 1));
+        int safeCol = Math.max(0, Math.min(col, wordLength - 1));
+        TextView anchor = tiles[row][safeCol];
+        if (anchor == null) {
+            return;
+        }
+
+        boardScroll.post(() -> {
+            View content = boardScroll.getChildAt(0);
+            if (content == null) {
+                return;
+            }
+
+            int anchorXInScroll = anchor.getLeft() + grid.getLeft();
+            int anchorCenter = anchorXInScroll + (anchor.getWidth() / 2);
+            int targetScrollX = anchorCenter - (boardScroll.getWidth() / 2);
+            int maxScroll = Math.max(0, content.getWidth() - boardScroll.getWidth());
+            targetScrollX = Math.max(0, Math.min(targetScrollX, maxScroll));
+
+            if (smooth) {
+                boardScroll.smoothScrollTo(targetScrollX, 0);
+            } else {
+                boardScroll.scrollTo(targetScrollX, 0);
+            }
+        });
     }
 
     private void shakeRow() {
