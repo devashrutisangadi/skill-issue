@@ -59,9 +59,3 @@ On Windows:
   - `app/src/main/assets/words.json`
 - Update branding/app name in:
   - `app/src/main/res/values/strings.xml`
-
-## Roadmap
-- Add difficulty presets and timed mode.
-- Add persistent stats (win streak, guess distribution).
-- Add animations for tile reveal per letter.
-
