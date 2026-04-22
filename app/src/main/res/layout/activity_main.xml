@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dark_bg"
     android:orientation="vertical"
     android:paddingStart="12dp"
-    android:paddingTop="14dp"
+    android:paddingTop="35dp"
     android:paddingEnd="12dp"
     android:paddingBottom="10dp">
 
@@ -54,96 +54,123 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <HorizontalScrollView
-        android:id="@+id/boardScroll"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true"
-        android:scrollbars="none">
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/introText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:text="Welcome to Skill Issue!&#10;Select a category and press START to get ragebaited."
+            android:textColor="@color/keyboard_light"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <HorizontalScrollView
+            android:id="@+id/boardScroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp">
+
+                <GridLayout
+                    android:id="@+id/gridLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:alignmentMode="alignBounds"
+                    android:columnCount="5"
+                    android:rowCount="6"
+                    android:useDefaultMargins="false" />
+            </LinearLayout>
+        </HorizontalScrollView>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/keyboardContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-            <GridLayout
-                android:id="@+id/gridLayout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:alignmentMode="alignBounds"
-                android:columnCount="5"
-                android:rowCount="6"
-                android:useDefaultMargins="false" />
+            <TextView android:id="@+id/keyQ" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="Q" />
+            <TextView android:id="@+id/keyW" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="W" />
+            <TextView android:id="@+id/keyE" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="E" />
+            <TextView android:id="@+id/keyR" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="R" />
+            <TextView android:id="@+id/keyT" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="T" />
+            <TextView android:id="@+id/keyY" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="Y" />
+            <TextView android:id="@+id/keyU" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="U" />
+            <TextView android:id="@+id/keyI" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="I" />
+            <TextView android:id="@+id/keyO" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="O" />
+            <TextView android:id="@+id/keyP" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="P" />
         </LinearLayout>
-    </HorizontalScrollView>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
 
-        <TextView android:id="@+id/keyQ" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="Q" />
-        <TextView android:id="@+id/keyW" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="W" />
-        <TextView android:id="@+id/keyE" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="E" />
-        <TextView android:id="@+id/keyR" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="R" />
-        <TextView android:id="@+id/keyT" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="T" />
-        <TextView android:id="@+id/keyY" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="Y" />
-        <TextView android:id="@+id/keyU" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="U" />
-        <TextView android:id="@+id/keyI" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="I" />
-        <TextView android:id="@+id/keyO" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="O" />
-        <TextView android:id="@+id/keyP" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="P" />
-    </LinearLayout>
+            <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.5" />
+            <TextView android:id="@+id/keyA" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="A" />
+            <TextView android:id="@+id/keyS" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="S" />
+            <TextView android:id="@+id/keyD" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="D" />
+            <TextView android:id="@+id/keyF" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="F" />
+            <TextView android:id="@+id/keyG" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="G" />
+            <TextView android:id="@+id/keyH" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="H" />
+            <TextView android:id="@+id/keyJ" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="J" />
+            <TextView android:id="@+id/keyK" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="K" />
+            <TextView android:id="@+id/keyL" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="L" />
+            <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.5" />
+        </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
 
-        <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.5" />
-        <TextView android:id="@+id/keyA" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="A" />
-        <TextView android:id="@+id/keyS" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="S" />
-        <TextView android:id="@+id/keyD" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="D" />
-        <TextView android:id="@+id/keyF" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="F" />
-        <TextView android:id="@+id/keyG" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="G" />
-        <TextView android:id="@+id/keyH" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="H" />
-        <TextView android:id="@+id/keyJ" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="J" />
-        <TextView android:id="@+id/keyK" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="K" />
-        <TextView android:id="@+id/keyL" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="L" />
-        <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="0.5" />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/keyENTER"
+                style="@style/KeyboardButtonSpecial"
+                android:layout_width="0dp"
+                android:layout_weight="1.5"
+                android:text="ENTER" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:orientation="horizontal">
+            <TextView android:id="@+id/keyZ" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="Z" />
+            <TextView android:id="@+id/keyX" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="X" />
+            <TextView android:id="@+id/keyC" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="C" />
+            <TextView android:id="@+id/keyV" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="V" />
+            <TextView android:id="@+id/keyB" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="B" />
+            <TextView android:id="@+id/keyN" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="N" />
+            <TextView android:id="@+id/keyM" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="M" />
 
-        <TextView
-            android:id="@+id/keyENTER"
-            style="@style/KeyboardButtonSpecial"
-            android:layout_width="0dp"
-            android:layout_weight="1.5"
-            android:text="ENTER" />
-
-        <TextView android:id="@+id/keyZ" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="Z" />
-        <TextView android:id="@+id/keyX" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="X" />
-        <TextView android:id="@+id/keyC" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="C" />
-        <TextView android:id="@+id/keyV" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="V" />
-        <TextView android:id="@+id/keyB" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="B" />
-        <TextView android:id="@+id/keyN" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="N" />
-        <TextView android:id="@+id/keyM" style="@style/KeyboardButton" android:layout_width="0dp" android:layout_weight="1" android:text="M" />
-
-        <TextView
-            android:id="@+id/keyDELETE"
-            style="@style/KeyboardButtonSpecial"
-            android:layout_width="0dp"
-            android:layout_weight="1.5"
-            android:text="DEL" />
+            <TextView
+                android:id="@+id/keyDELETE"
+                style="@style/KeyboardButtonSpecial"
+                android:layout_width="0dp"
+                android:layout_weight="1.5"
+                android:text="DEL" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>
