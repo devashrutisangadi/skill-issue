@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,10 +29,10 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private static final int MIN_LETTER_COUNT = 3;
-    private static final int MAX_DISPLAY_LENGTH = 12;
 
     private Spinner categorySpinner;
     private GridLayout grid;
+    private HorizontalScrollView boardScroll;
     private Button startButton;
 
     private Map<String, List<String>> categories;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         categorySpinner = findViewById(R.id.categorySpinner);
         grid = findViewById(R.id.gridLayout);
+        boardScroll = findViewById(R.id.boardScroll);
         startButton = findViewById(R.id.startButton);
 
         categories = WordLoader.loadCategories(this);
@@ -113,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
         createTiles();
         resetKeyboard();
         currentCol = findNextEditableCol(0);
+        if (boardScroll != null) {
+            boardScroll.post(() -> boardScroll.fullScroll(View.FOCUS_LEFT));
+        }
 
         startButton.setEnabled(false);
     }
@@ -123,19 +128,12 @@ public class MainActivity extends AppCompatActivity {
         grid.setRowCount(maxRows);
         tiles = new TextView[maxRows][wordLength];
 
-        int screenWidth = getResources().getDisplayMetrics().widthPixels;
         int screenHeight = getResources().getDisplayMetrics().heightPixels;
-
-        int horizontalPadding = dpToPx(24);
-        int horizontalGaps = wordLength * dpToPx(6);
-        int widthBasedSize = (screenWidth - horizontalPadding - horizontalGaps) / Math.max(wordLength, 1);
-
-        int gridHeightBudget = (int) (screenHeight * 0.42f);
+        int gridHeightBudget = (int) (screenHeight * 0.40f);
         int verticalGaps = maxRows * dpToPx(6);
-        int heightBasedSize = (gridHeightBudget - verticalGaps) / Math.max(maxRows, 1);
-
-        int tileSize = Math.min(widthBasedSize, heightBasedSize);
-        tileSize = Math.max(dpToPx(32), Math.min(tileSize, dpToPx(62)));
+        int tileSize = (gridHeightBudget - verticalGaps) / Math.max(maxRows, 1);
+        tileSize = Math.max(dpToPx(28), Math.min(tileSize, dpToPx(56)));
+        int spaceWidth = Math.max(dpToPx(8), tileSize / 3);
 
         for (int row = 0; row < maxRows; row++) {
             for (int col = 0; col < wordLength; col++) {
@@ -144,12 +142,14 @@ public class MainActivity extends AppCompatActivity {
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
                 params.rowSpec = GridLayout.spec(row);
                 params.columnSpec = GridLayout.spec(col);
-                params.width = tileSize;
+                params.width = isFixedSpace(col) ? spaceWidth : tileSize;
                 params.height = tileSize;
                 params.setMargins(dpToPx(3), dpToPx(3), dpToPx(3), dpToPx(3));
 
                 tile.setLayoutParams(params);
                 tile.setGravity(Gravity.CENTER);
+                tile.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                tile.setIncludeFontPadding(false);
                 tile.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
                 tile.setTypeface(Typeface.DEFAULT_BOLD);
 
@@ -180,9 +180,11 @@ public class MainActivity extends AppCompatActivity {
             char letter = letters[i].charAt(0);
 
             btn.setText(String.valueOf(letter));
-            btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+            btn.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
             btn.setTypeface(Typeface.DEFAULT_BOLD);
             btn.setGravity(Gravity.CENTER);
+            btn.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+            btn.setIncludeFontPadding(false);
             btn.setBackgroundResource(R.drawable.key_normal);
             btn.setBackgroundTintList(null);
             btn.setTextColor(getResources().getColor(R.color.white, null));
@@ -193,9 +195,11 @@ public class MainActivity extends AppCompatActivity {
 
         TextView enterButton = findViewById(R.id.keyENTER);
         enterButton.setText("ENTER");
-        enterButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        enterButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         enterButton.setTypeface(Typeface.DEFAULT_BOLD);
         enterButton.setGravity(Gravity.CENTER);
+        enterButton.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        enterButton.setIncludeFontPadding(false);
         enterButton.setBackgroundResource(R.drawable.key_enter);
         enterButton.setBackgroundTintList(null);
         enterButton.setTextColor(getResources().getColor(R.color.white, null));
@@ -203,9 +207,11 @@ public class MainActivity extends AppCompatActivity {
 
         TextView deleteButton = findViewById(R.id.keyDELETE);
         deleteButton.setText("DEL");
-        deleteButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+        deleteButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         deleteButton.setTypeface(Typeface.DEFAULT_BOLD);
         deleteButton.setGravity(Gravity.CENTER);
+        deleteButton.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        deleteButton.setIncludeFontPadding(false);
         deleteButton.setBackgroundResource(R.drawable.key_enter);
         deleteButton.setBackgroundTintList(null);
         deleteButton.setTextColor(getResources().getColor(R.color.white, null));
@@ -256,6 +262,7 @@ public class MainActivity extends AppCompatActivity {
 
         String guess = buildGuessFromRow(currentRow);
         if (!validGuesses.contains(guess)) {
+            Toast.makeText(this, "Not in word list", Toast.LENGTH_SHORT).show();
             shakeRow();
             return;
         }
@@ -484,7 +491,6 @@ public class MainActivity extends AppCompatActivity {
     private void shakeRow() {
         Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
         grid.startAnimation(shake);
-        Toast.makeText(this, "Not a valid word", Toast.LENGTH_SHORT).show();
     }
 
     private List<String> getPlayableEntries(List<String> words) {
@@ -499,9 +505,6 @@ public class MainActivity extends AppCompatActivity {
 
             int letters = getLetterCount(cleaned);
             if (letters < MIN_LETTER_COUNT) {
-                continue;
-            }
-            if (cleaned.length() > MAX_DISPLAY_LENGTH) {
                 continue;
             }
 
