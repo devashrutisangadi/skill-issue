@@ -60,10 +60,8 @@
     "mugello circuit", "algarve international",
     "banana leclerc", "honey badger", "sid from ice age", "t pose"
   ],
-  "disney": [{
-    "disney": [
-      "hannah montana",
-      "miley stewart",
+  "disney": [
+      "hannah montana","miley stewart",
       "lilly truscott",
       "oliver oken",
       "jackson stewart",
@@ -217,5 +215,4 @@
       "pixie dust",
       "bibbidi bobbidi boo"
     ]
-  }]
 }
