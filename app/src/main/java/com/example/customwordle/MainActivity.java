@@ -1,5 +1,7 @@
 package com.example.customwordle;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -8,6 +10,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -29,6 +33,8 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private static final int MIN_LETTER_COUNT = 3;
+    private static final long REVEAL_STAGGER_MS = 220L;
+    private static final long REVEAL_HALF_DURATION_MS = 130L;
 
     private Spinner categorySpinner;
     private GridLayout grid;
@@ -49,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private int maxRows = 6;
     private int currentRow = 0;
     private int currentCol = 0;
+    private boolean isRowAnimating = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
         currentRow = 0;
         currentCol = 0;
+        isRowAnimating = false;
         keyboardState.clear();
 
         showGameState();
@@ -246,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleKey(char key) {
-        if (targetWord == null || currentRow >= maxRows) {
+        if (targetWord == null || currentRow >= maxRows || isRowAnimating) {
             return;
         }
 
@@ -262,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleDelete() {
-        if (targetWord == null || currentRow >= maxRows) {
+        if (targetWord == null || currentRow >= maxRows || isRowAnimating) {
             return;
         }
 
@@ -275,6 +283,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void submitGuess() {
+        if (isRowAnimating) {
+            return;
+        }
+
         if (targetWord == null) {
             Toast.makeText(this, "Start a game first", Toast.LENGTH_SHORT).show();
             return;
@@ -298,23 +310,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
         int[] result = checkGuess(guess, targetWord);
-        colorTiles(result);
-        updateKeyboard(guess, result);
+        isRowAnimating = true;
+        animateRowReveal(currentRow, result, () -> {
+            updateKeyboard(guess, result);
+            isRowAnimating = false;
 
-        if (guess.equals(targetWord)) {
-            Toast.makeText(this, "Genius!", Toast.LENGTH_LONG).show();
-            startButton.setEnabled(true);
-            return;
-        }
+            if (guess.equals(targetWord)) {
+                Toast.makeText(this, "Genius!", Toast.LENGTH_LONG).show();
+                startButton.setEnabled(true);
+                return;
+            }
 
-        currentRow++;
-        currentCol = findNextEditableCol(0);
-        centerViewportOnCol(currentCol, true);
+            currentRow++;
+            currentCol = findNextEditableCol(0);
+            centerViewportOnCol(currentCol, true);
 
-        if (currentRow == maxRows) {
-            Toast.makeText(this, "Lost! The word was: " + targetWord, Toast.LENGTH_LONG).show();
-            startButton.setEnabled(true);
-        }
+            if (currentRow == maxRows) {
+                Toast.makeText(this, "Lost! The word was: " + targetWord, Toast.LENGTH_LONG).show();
+                startButton.setEnabled(true);
+            }
+        });
     }
 
     private boolean isRowComplete(int row) {
@@ -402,28 +417,7 @@ public class MainActivity extends AppCompatActivity {
     private void colorTiles(int[] result) {
         for (int i = 0; i < wordLength; i++) {
             TextView tile = tiles[currentRow][i];
-            if (result[i] == -1) {
-                tile.setText(" ");
-                tile.setBackgroundColor(getResources().getColor(R.color.dark_bg, null));
-                tile.setTextColor(getResources().getColor(R.color.dark_bg, null));
-                continue;
-            }
-
-            int color;
-            switch (result[i]) {
-                case 2:
-                    color = getResources().getColor(R.color.tile_green, null);
-                    break;
-                case 1:
-                    color = getResources().getColor(R.color.tile_yellow, null);
-                    break;
-                default:
-                    color = getResources().getColor(R.color.tile_gray, null);
-                    break;
-            }
-
-            tile.setBackgroundColor(color);
-            tile.setTextColor(Color.WHITE);
+            applyTileState(tile, result[i]);
         }
     }
 
@@ -552,8 +546,112 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void shakeRow() {
-        Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
-        grid.startAnimation(shake);
+        for (int col = 0; col < wordLength; col++) {
+            if (isFixedSpace(col)) {
+                continue;
+            }
+            TextView tile = tiles[currentRow][col];
+            if (tile != null) {
+                Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
+                tile.startAnimation(shake);
+            }
+        }
+    }
+
+    private void animateRowReveal(int row, int[] result, Runnable onComplete) {
+        int revealableTiles = 0;
+        for (int col = 0; col < wordLength; col++) {
+            if (!isFixedSpace(col) && result[col] != -1) {
+                revealableTiles++;
+            }
+        }
+        final int totalRevealableTiles = revealableTiles;
+
+        if (totalRevealableTiles == 0) {
+            if (onComplete != null) {
+                onComplete.run();
+            }
+            return;
+        }
+
+        final int[] completed = {0};
+        int sequence = 0;
+        for (int col = 0; col < wordLength; col++) {
+            if (isFixedSpace(col) || result[col] == -1) {
+                continue;
+            }
+
+            TextView tile = tiles[row][col];
+            int tileResult = result[col];
+            long delay = sequence * REVEAL_STAGGER_MS;
+            sequence++;
+            animateSingleTileReveal(tile, tileResult, delay, () -> {
+                completed[0]++;
+                if (completed[0] == totalRevealableTiles && onComplete != null) {
+                    onComplete.run();
+                }
+            });
+        }
+    }
+
+    private void animateSingleTileReveal(TextView tile, int tileResult, long delayMs, Runnable onEnd) {
+        tile.animate().cancel();
+        tile.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        tile.setScaleY(1f);
+        tile.setPivotY(tile.getHeight() / 2f);
+
+        tile.animate()
+                .setStartDelay(delayMs)
+                .setDuration(REVEAL_HALF_DURATION_MS)
+                .scaleY(0.05f)
+                .setInterpolator(new AccelerateInterpolator())
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        applyTileState(tile, tileResult);
+                        tile.animate()
+                                .setStartDelay(0)
+                                .setDuration(REVEAL_HALF_DURATION_MS)
+                                .scaleY(1f)
+                                .setInterpolator(new DecelerateInterpolator())
+                                .setListener(new AnimatorListenerAdapter() {
+                                    @Override
+                                    public void onAnimationEnd(Animator animation) {
+                                        tile.setLayerType(View.LAYER_TYPE_NONE, null);
+                                        if (onEnd != null) {
+                                            onEnd.run();
+                                        }
+                                    }
+                                })
+                                .start();
+                    }
+                })
+                .start();
+    }
+
+    private void applyTileState(TextView tile, int tileResult) {
+        if (tileResult == -1) {
+            tile.setText(" ");
+            tile.setBackgroundColor(getResources().getColor(R.color.dark_bg, null));
+            tile.setTextColor(getResources().getColor(R.color.dark_bg, null));
+            return;
+        }
+
+        int color;
+        switch (tileResult) {
+            case 2:
+                color = getResources().getColor(R.color.tile_green, null);
+                break;
+            case 1:
+                color = getResources().getColor(R.color.tile_yellow, null);
+                break;
+            default:
+                color = getResources().getColor(R.color.tile_gray, null);
+                break;
+        }
+
+        tile.setBackgroundColor(color);
+        tile.setTextColor(Color.WHITE);
     }
 
     private List<String> getPlayableEntries(List<String> words) {
